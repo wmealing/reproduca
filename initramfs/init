@@ -1,0 +1,32 @@
+#!/bin/sh
+ 
+mount -t proc none /proc
+mount -t sysfs none /sys
+
+mknod /dev/null c 1 3
+mknod /dev/tty c 5 0
+mknod /dev/tty0 c 4 0
+mknod /dev/tty1 c 4 1
+mknod /dev/ttyS0 c 4 64
+
+chmod 600 /dev/console
+chmod 666 /dev/null
+chmod 666 /dev/tty
+chmod 666 /dev/tty0
+chmod 666 /dev/tty1
+chmod 777 /dev/ttyS0
+
+echo "root:x:0:0:root:/root:/bin/sh" >> /etc/passwd
+echo "x:x:1000:1000:x:/tmp:/bin/sh" >> /etc/passwd
+
+echo -e "\nBoot took $(cut -d' ' -f1 /proc/uptime) seconds\n"
+
+/tmp/reproducer
+   
+setsid setuidgid 1000 cttyhack /bin/sh
+
+# clean up
+umount /proc
+umount /sys
+
+poweroff -f
